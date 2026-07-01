@@ -22,7 +22,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "blog_posts")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class BlogPost {
 
 	@Id

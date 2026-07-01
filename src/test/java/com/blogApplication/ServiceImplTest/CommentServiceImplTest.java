@@ -45,35 +45,43 @@ public class CommentServiceImplTest {
     @Mock
     private Authentication authentication;
 
+    private User user;
+    private BlogPost blogPost;
+    private Comment comment;
+    private CommentDto commentDto;
+
     @BeforeEach
-    void setupSecurityContext() {
+    void setUp() {
         SecurityContext securityContext = mock(SecurityContext.class);
         lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
-    }
 
-    @Test
-    void testAddComment_Success() {
-        User user = new User();
+        user = new User();
         user.setId(1L);
         user.setUsername("john");
 
-        BlogPost blogPost = new BlogPost();
+        blogPost = new BlogPost();
         blogPost.setId(100L);
+        blogPost.setUser(user);
+        blogPost.setPublic(true);
 
-        CommentDto dto = new CommentDto(null, "Nice post!", null, 100L, null);
-        Comment comment = new Comment();
+        comment = new Comment();
         comment.setId(1L);
         comment.setContent("Nice post!");
         comment.setUser(user);
         comment.setBlogPost(blogPost);
 
+        commentDto = new CommentDto(null, "Nice post!", null, 100L, null);
+    }
+
+    @Test
+    void testAddComment_Success() {
         when(authentication.getName()).thenReturn("john");
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(user));
         when(blogRepository.findById(100L)).thenReturn(Optional.of(blogPost));
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
-        CommentDto result = commentService.addComment(100L, dto);
+        CommentDto result = commentService.addComment(100L, commentDto);
 
         assertEquals("Nice post!", result.getContent());
         assertEquals(1L, result.getId());
@@ -82,20 +90,8 @@ public class CommentServiceImplTest {
 
     @Test
     void testUpdateComment_Success() {
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("john");
-
-        BlogPost blogPost = new BlogPost();
-        blogPost.setId(100L);
-
-        Comment comment = new Comment();
-        comment.setId(1L);
-        comment.setContent("Old comment");
-        comment.setUser(user);
-        comment.setBlogPost(blogPost);
-
         CommentDto updateDto = new CommentDto(null, "Updated comment", null, null, null);
+        comment.setContent("Updated comment");
 
         when(authentication.getName()).thenReturn("john");
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(user));
@@ -109,15 +105,8 @@ public class CommentServiceImplTest {
 
     @Test
     void testUpdateComment_UnauthorizedUser() {
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("john");
-
         User otherUser = new User();
         otherUser.setId(2L);
-
-        Comment comment = new Comment();
-        comment.setId(1L);
         comment.setUser(otherUser);
 
         CommentDto updateDto = new CommentDto(null, "Updated", null, null, null);
@@ -126,21 +115,11 @@ public class CommentServiceImplTest {
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(user));
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
 
-        assertThrows(RuntimeException.class, () -> {
-            commentService.updateComment(1L, updateDto);
-        });
+        assertThrows(RuntimeException.class, () -> commentService.updateComment(1L, updateDto));
     }
 
     @Test
     void testDeleteComment_Success() {
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("john");
-
-        Comment comment = new Comment();
-        comment.setId(1L);
-        comment.setUser(user);
-
         when(authentication.getName()).thenReturn("john");
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(user));
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
@@ -152,19 +131,8 @@ public class CommentServiceImplTest {
 
     @Test
     void testDeleteCommentByBlogCreator_Success() {
-        User blogCreator = new User();
-        blogCreator.setId(1L);
-        blogCreator.setUsername("john");
-
-        BlogPost blogPost = new BlogPost();
-        blogPost.setId(100L);
-        blogPost.setUser(blogCreator);
-
-        Comment comment = new Comment();
-        comment.setId(1L);
-
         when(authentication.getName()).thenReturn("john");
-        when(userRepository.findByUsername("john")).thenReturn(Optional.of(blogCreator));
+        when(userRepository.findByUsername("john")).thenReturn(Optional.of(user));
         when(blogRepository.findById(100L)).thenReturn(Optional.of(blogPost));
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
 
@@ -175,37 +143,20 @@ public class CommentServiceImplTest {
 
     @Test
     void testGetCommentsByBlogPost_PublicBlog() {
-        BlogPost blogPost = new BlogPost();
-        blogPost.setId(100L);
-        blogPost.setPublic(true);
-
-        User user = new User();
-        user.setId(1L);
-        user.setUsername("john");
-
-        Comment comment = new Comment();
-        comment.setId(1L);
-        comment.setContent("Nice!");
-        comment.setUser(user);
-        comment.setBlogPost(blogPost);
-
         when(blogRepository.findById(100L)).thenReturn(Optional.of(blogPost));
         when(commentRepository.findByBlogPostId(100L)).thenReturn(List.of(comment));
 
         List<CommentDto> result = commentService.getCommentsByBlogPost(100L, null);
 
         assertEquals(1, result.size());
-        assertEquals("Nice!", result.get(0).getContent());
+        assertEquals("Nice post!", result.get(0).getContent());
     }
 
     @Test
     void testGetCommentsByBlogPost_PrivateBlog_Unauthenticated() {
-        BlogPost blogPost = new BlogPost();
-        blogPost.setId(100L);
         blogPost.setPublic(false);
 
         when(blogRepository.findById(100L)).thenReturn(Optional.of(blogPost));
-
         when(authentication.isAuthenticated()).thenReturn(false);
 
         assertThrows(ResourceNotFoundException.class, () -> {

@@ -8,6 +8,7 @@ import com.blogApplication.entity.User;
 import com.blogApplication.exception.ResourceNotFoundException;
 import com.blogApplication.repository.UserRepository;
 import com.blogApplication.serviceImpl.UserServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -27,10 +28,25 @@ public class UserServiceImplTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    private UserDto userDto;
+    private User user;
+    private LoginDto loginDto;
+
+    @BeforeEach
+    void setUp() {
+        userDto = new UserDto(1L, "john", "john@example.com", "password123");
+
+        user = new User();
+        user.setId(1L);
+        user.setUsername("john");
+        user.setEmail("john@example.com");
+        user.setPassword("encodedPassword");
+
+        loginDto = new LoginDto("john", "password123", null);
+    }
+
     @Test
     void testRegisterUser_Success() {
-        UserDto userDto = new UserDto(1L, "john", "john@example.com", "password123");
-
         when(userRepository.findByUsername("john")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
@@ -43,8 +59,6 @@ public class UserServiceImplTest {
 
     @Test
     void testRegisterUser_UsernameExists() {
-        UserDto userDto = new UserDto(1L, "john", "john@example.com", "password123");
-
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(new User()));
 
         String result = userService.registerUser(userDto);
@@ -55,8 +69,6 @@ public class UserServiceImplTest {
 
     @Test
     void testRegisterUser_EmailExists() {
-        UserDto userDto = new UserDto(1L, "john", "john@example.com", "password123");
-
         when(userRepository.findByUsername("john")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(new User()));
 
@@ -68,15 +80,9 @@ public class UserServiceImplTest {
 
     @Test
     void testLoginUser_Success() {
-        User user = new User();
-        user.setUsername("john");
-        user.setEmail("john@example.com");
-        user.setPassword("encodedPassword");
-
         when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
 
-        LoginDto loginDto = new LoginDto("john", "password123", null);
         LoginDto result = userService.loginUser(loginDto);
 
         assertEquals("Login successful!", result.getMessage());
@@ -87,27 +93,22 @@ public class UserServiceImplTest {
     void testLoginUser_UserNotFound() {
         when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.empty());
 
-        LoginDto loginDto = new LoginDto("john", "password123", null);
-
         Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
             userService.loginUser(loginDto);
         });
 
         assertTrue(exception.getMessage().contains("User not found"));
     }
-    
+
     @Test
     void testLoginUser_InvalidPassword() {
-        User user = new User();
-        user.setPassword("encodedPassword");
-
         when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
 
-        LoginDto loginDto = new LoginDto("john", "wrongPassword", null);
+        LoginDto invalidLoginDto = new LoginDto("john", "wrongPassword", null);
 
         Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
-            userService.loginUser(loginDto);
+            userService.loginUser(invalidLoginDto);
         });
 
         assertEquals("Invalid password!", exception.getMessage());

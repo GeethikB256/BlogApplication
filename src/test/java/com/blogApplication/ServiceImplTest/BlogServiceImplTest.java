@@ -7,6 +7,7 @@ import com.blogApplication.exception.ResourceNotFoundException;
 import com.blogApplication.repository.BlogRepository;
 import com.blogApplication.repository.UserRepository;
 import com.blogApplication.serviceImpl.BlogServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,19 +34,27 @@ public class BlogServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
-    @Test
-    void testCreateBlog_Success() {
-        BlogDto blogDto = new BlogDto(null, "Title", "Content", true, null);
-        User user = new User();
+    private User user;
+    private BlogPost blogPost;
+    private BlogDto blogDto;
+
+    @BeforeEach
+    public void setUp() {
+        user = new User();
         user.setUsername("john");
 
-        BlogPost blogPost = new BlogPost();
+        blogPost = new BlogPost();
         blogPost.setId(1L);
         blogPost.setTitle("Title");
         blogPost.setContent("Content");
         blogPost.setPublic(true);
         blogPost.setUser(user);
 
+        blogDto = new BlogDto(null, "Title", "Content", true, null);
+    }
+
+    @Test
+    void testCreateBlog_Success() {
         when(userRepository.findByUsername("john")).thenReturn(Optional.of(user));
         when(blogRepository.save(any(BlogPost.class))).thenReturn(blogPost);
 
@@ -54,28 +63,22 @@ public class BlogServiceImplTest {
         assertEquals("Title", result.getTitle());
         assertEquals("john", result.getUserName());
     }
+
     @Test
     void testCreateBlog_UserNotFound() {
-        BlogDto dto = new BlogDto(null, "Test Title", "Test Content", true, "unknown");
-
         when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
+
+        BlogDto dto = new BlogDto(null, "Test Title", "Test Content", true, "unknown");
 
         assertThrows(ResourceNotFoundException.class, () -> blogService.createBlog(dto, "unknown"));
     }
 
     @Test
     void testUpdateBlog_Success() {
-        User user = new User();
-        user.setUsername("john");
-
-        BlogPost existingBlog = new BlogPost();
-        existingBlog.setId(1L);
-        existingBlog.setUser(user);
-
         BlogDto updateDto = new BlogDto(null, "Updated Title", "Updated Content", false, null);
 
-        when(blogRepository.findById(1L)).thenReturn(Optional.of(existingBlog));
-        when(blogRepository.save(any(BlogPost.class))).thenReturn(existingBlog);
+        when(blogRepository.findById(1L)).thenReturn(Optional.of(blogPost));
+        when(blogRepository.save(any(BlogPost.class))).thenReturn(blogPost);
 
         BlogDto result = blogService.updateBlog(1L, updateDto, "john");
 
@@ -85,91 +88,46 @@ public class BlogServiceImplTest {
 
     @Test
     void testUpdateBlog_UnauthorizedUser() {
-        User user = new User();
-        user.setUsername("john");
-
-        BlogPost blog = new BlogPost();
-        blog.setId(1L);
-        blog.setUser(user);
+        when(blogRepository.findById(1L)).thenReturn(Optional.of(blogPost));
 
         BlogDto updateDto = new BlogDto(null, "Updated", "Updated", true, null);
 
-        when(blogRepository.findById(1L)).thenReturn(Optional.of(blog));
-
-        assertThrows(ResourceNotFoundException.class, () -> {
-            blogService.updateBlog(1L, updateDto, "jane");
-        });
+        assertThrows(ResourceNotFoundException.class, () -> blogService.updateBlog(1L, updateDto, "jane"));
     }
 
     @Test
     void testDeleteBlog_Success() {
-        User user = new User();
-        user.setUsername("john");
-
-        BlogPost blog = new BlogPost();
-        blog.setId(1L);
-        blog.setUser(user);
-
-        when(blogRepository.findById(1L)).thenReturn(Optional.of(blog));
+        when(blogRepository.findById(1L)).thenReturn(Optional.of(blogPost));
 
         blogService.deleteBlog(1L, "john");
 
-        verify(blogRepository).delete(blog);
+        verify(blogRepository).delete(blogPost);
     }
 
     @Test
     void testDeleteBlog_UnauthorizedUser() {
-        User user = new User();
-        user.setUsername("john");
+        when(blogRepository.findById(1L)).thenReturn(Optional.of(blogPost));
 
-        BlogPost blog = new BlogPost();
-        blog.setId(1L);
-        blog.setUser(user);
-
-        when(blogRepository.findById(1L)).thenReturn(Optional.of(blog));
-
-        assertThrows(ResourceNotFoundException.class, () -> {
-            blogService.deleteBlog(1L, "jane");
-        });
+        assertThrows(ResourceNotFoundException.class, () -> blogService.deleteBlog(1L, "jane"));
     }
 
     @Test
     void testGetPublicBlogs() {
-        User user = new User();
-        user.setUsername("john");
-
-        BlogPost blog = new BlogPost();
-        blog.setId(1L);
-        blog.setTitle("Public Blog");
-        blog.setContent("Content");
-        blog.setPublic(true);
-        blog.setUser(user);
-
-        when(blogRepository.findByIsPublicTrue()).thenReturn(List.of(blog));
+        when(blogRepository.findByIsPublicTrue()).thenReturn(List.of(blogPost));
 
         List<BlogDto> result = blogService.getPublicBlogs();
 
         assertEquals(1, result.size());
-        assertEquals("Public Blog", result.get(0).getTitle());
+        assertEquals("Title", result.get(0).getTitle());
     }
 
     @Test
     void testGetBlogsByUser() {
-        User user = new User();
-        user.setUsername("john");
-
-        BlogPost blog = new BlogPost();
-        blog.setId(1L);
-        blog.setTitle("User Blog");
-        blog.setContent("Content");
-        blog.setPublic(false);
-        blog.setUser(user);
-
-        when(blogRepository.findByUserUsername("john")).thenReturn(List.of(blog));
+        when(blogRepository.findByUserUsername("john")).thenReturn(List.of(blogPost));
 
         List<BlogDto> result = blogService.getBlogsByUser("john");
 
         assertEquals(1, result.size());
-        assertEquals("User Blog", result.get(0).getTitle());
+        assertEquals("Title", result.get(0).getTitle());
     }
 }

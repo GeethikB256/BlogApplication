@@ -29,7 +29,7 @@ public class BlogController {
     @PostMapping("/create")
     public ResponseEntity<BlogDto> createBlog(@RequestBody BlogDto blogDto,
                                               Authentication authentication) {
-        String username = authentication.getName(); // from JWT
+        String username = authentication.getName();
         BlogDto createdBlog = blogService.createBlog(blogDto, username);
         return ResponseEntity.ok(createdBlog);
     }
