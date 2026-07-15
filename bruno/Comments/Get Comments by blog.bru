@@ -1,0 +1,12 @@
+meta {
+  name: Get Comments By Blog
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/api/comments/byBlog/1
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

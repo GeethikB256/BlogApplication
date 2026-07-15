@@ -1,0 +1,21 @@
+meta {
+  name: Create Blog
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/api/blogs/create
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "title": "Spring Boot Security",
+    "content": "Learning JWT Authentication",
+    "public": true
+  }
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Add Comment
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/api/comments/add/1
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "content": "Very useful blog!"
+  }
+}

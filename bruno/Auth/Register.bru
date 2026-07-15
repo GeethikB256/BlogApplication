@@ -1,0 +1,20 @@
+meta {
+  name: Register User
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/api/auth/register
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "username": "geethika",
+    "email": "geethika@gmail.com",
+    "password": "Password@123"
+  }
+}
