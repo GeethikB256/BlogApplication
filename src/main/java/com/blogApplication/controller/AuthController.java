@@ -15,6 +15,9 @@ import com.blogApplication.security.CustomUserDetails;
 import com.blogApplication.security.JwtUtil;
 import com.blogApplication.service.UserService;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -32,9 +35,11 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserDto dto) {
+    public ResponseEntity<Map<String, String>> register(@RequestBody UserDto dto) {
         String result = userService.registerUser(dto);
-        return ResponseEntity.ok(result);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", result);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")

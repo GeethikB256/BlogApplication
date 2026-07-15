@@ -85,7 +85,7 @@ public class UserServiceImplTest {
 
         LoginDto result = userService.loginUser(loginDto);
 
-        assertEquals("Login successful!", result.getMessage());
+        assertEquals("Login.bru successful!", result.getMessage());
         assertEquals("john", result.getUsernameOrEmail());
     }
 

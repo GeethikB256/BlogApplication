@@ -59,7 +59,6 @@ public class UserServiceImpl implements UserService {
         }
         LoginDto response = new LoginDto();
         response.setUsernameOrEmail(user.getUsername());
-        response.setMessage("Login successful!");
         return response;
     }
  

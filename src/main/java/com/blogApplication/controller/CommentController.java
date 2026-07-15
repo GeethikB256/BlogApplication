@@ -6,9 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
- 
+import java.util.HashMap;
+import java.util.Map;
+
+import java.util.HashMap;
 import java.util.List;
- 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
@@ -35,18 +39,22 @@ public class CommentController {
     }
 
     @DeleteMapping("/delete/{commentId}")
-    public ResponseEntity<String> deleteComment(@PathVariable Long commentId) {
+    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
-        return ResponseEntity.ok("Comment deleted successfully");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Comment deleted successfully");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/deleteByCreator/{blogId}/{commentId}")
-    public ResponseEntity<String> deleteCommentByBlogCreator(
+    public ResponseEntity<Map<String, String>> deleteCommentByBlogCreator(
             @PathVariable Long blogId,
             @PathVariable Long commentId
     ) {
         commentService.deleteCommentByBlogcreator(blogId, commentId);
-        return ResponseEntity.ok("Comment deleted by blog creator successfully");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Comment deleted by blog creator successfully");
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/byBlog/{blogId}")

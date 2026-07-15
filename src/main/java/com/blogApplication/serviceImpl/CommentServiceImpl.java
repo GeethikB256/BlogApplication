@@ -56,7 +56,7 @@ public class CommentServiceImpl implements CommentService {
 
     public CommentDto addComment(Long blogPostId,CommentDto commentDto) {
         User user = getCurrentUser();
-        BlogPost blogPost = blogRepository.findById(commentDto.getBlogPostId())
+        BlogPost blogPost = blogRepository.findById(blogPostId)
                 .orElseThrow(() -> new ResourceNotFoundException("Blog post not found"));
         Comment comment = mapToEntity(commentDto, blogPost, user);
         Comment saved = commentRepository.save(comment);
@@ -111,7 +111,6 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Blog not found with ID: " + blogPostId));
 
         if (!blog.isPublic()) {
-            // If not public, require authentication
             if (authentication == null || !authentication.isAuthenticated()) {
                 throw new ResourceNotFoundException("Authentication required to view comments on private blogs");
             }
