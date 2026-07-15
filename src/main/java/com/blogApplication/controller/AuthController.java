@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.blogApplication.dto.JwtResponse;
 import com.blogApplication.dto.LoginDto;
 import com.blogApplication.dto.UserDto;
-import com.blogApplication.security.CustomUserDetails;
 import com.blogApplication.security.JwtUtil;
 import com.blogApplication.service.UserService;
 
