@@ -1,0 +1,21 @@
+meta {
+  name: Update Blog
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/api/blogs/update/1
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "title": "Updated Blog",
+    "content": "Updated Content",
+    "public": true
+  }
+}

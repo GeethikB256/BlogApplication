@@ -1,0 +1,12 @@
+meta {
+  name: Delete Comment By Blog Creator
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/api/comments/deleteByCreator/1/1
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

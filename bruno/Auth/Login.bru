@@ -1,0 +1,19 @@
+meta {
+  name: Login
+  type: http
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "usernameOrEmail": "geethika",
+    "password": "Password@123"
+  }
+}

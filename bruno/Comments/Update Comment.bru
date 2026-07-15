@@ -1,0 +1,19 @@
+meta {
+  name: Update Comment
+  type: http
+}
+
+put {
+  url: {{baseUrl}}/api/comments/update/1
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "content": "Updated comment"
+  }
+}

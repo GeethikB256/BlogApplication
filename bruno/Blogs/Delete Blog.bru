@@ -1,0 +1,12 @@
+meta {
+  name: Delete Blog
+  type: http
+}
+
+delete {
+  url: {{baseUrl}}/api/blogs/delete/1
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

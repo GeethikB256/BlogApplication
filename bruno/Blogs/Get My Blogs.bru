@@ -1,0 +1,12 @@
+meta {
+  name: Get My Blogs
+  type: http
+}
+
+get {
+  url: {{baseUrl}}/api/blogs/my
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
